@@ -16,7 +16,7 @@
         tools:targetApi="31"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".activity.AuthViewActivity"
+            android:name=".activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Material3.Dark.NoActionBar">
@@ -30,7 +30,15 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+        <activity
+            android:name=".activity.AuthViewActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Material3.Dark.NoActionBar"/>
 
+        <activity
+            android:name=".activity.ClientViewActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Material3.Dark.NoActionBar"/>
     </application>
 
 </manifest>

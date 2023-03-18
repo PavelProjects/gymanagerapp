@@ -21,7 +21,8 @@
             android:hint="@string/login"
             android:inputType="textPersonName"
             android:gravity="center"
-            android:autofillHints="login" />
+            android:autofillHints="login"
+            android:text="test_admin"/>
         <EditText
             android:id="@+id/user_password"
             android:layout_width="match_parent"
@@ -30,7 +31,8 @@
             android:hint="@string/password"
             android:inputType="textPassword"
             android:gravity="center"
-            android:autofillHints="password" />
+            android:autofillHints="password"
+            android:text="qwerty" />
 
     </LinearLayout>
 

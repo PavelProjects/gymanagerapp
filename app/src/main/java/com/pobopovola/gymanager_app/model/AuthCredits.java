@@ -6,9 +6,6 @@ public class AuthCredits {
     private String login;
     private String password;
 
-    public AuthCredits() {
-    }
-
     public AuthCredits(String login, String password) {
         this.login = login;
         this.password = password;

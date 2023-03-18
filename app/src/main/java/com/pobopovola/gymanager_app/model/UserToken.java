@@ -5,6 +5,13 @@ import androidx.annotation.NonNull;
 public class UserToken {
     private String token;
 
+    public UserToken() {
+    }
+
+    public UserToken(String token) {
+        this.token = token;
+    }
+
     public String getToken() {
         return token;
     }
