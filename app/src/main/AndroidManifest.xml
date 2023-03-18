@@ -19,7 +19,7 @@
             android:name=".activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Material3.Dark.NoActionBar">
+            android:theme="@style/Theme.Material3.Dark">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,12 +33,12 @@
         <activity
             android:name=".activity.AuthViewActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Material3.Dark.NoActionBar"/>
+            android:theme="@style/Theme.Material3.Dark"/>
 
         <activity
             android:name=".activity.ClientViewActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Material3.Dark.NoActionBar"/>
+            android:theme="@style/Theme.Material3.Dark"/>
     </application>
 
 </manifest>

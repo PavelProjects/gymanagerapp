@@ -8,4 +8,5 @@
     <string name="login_preferences">login</string>
     <string name="password_preferences">password</string>
     <string name="token_preferences">token</string>
+    <string name="workouts">Workouts</string>
 </resources>

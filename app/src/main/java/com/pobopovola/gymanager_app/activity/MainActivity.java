@@ -17,7 +17,7 @@ import com.pobopovola.gymanager_app.CreditsHolder;
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.ClientAdapter;
 import com.pobopovola.gymanager_app.tasks.AuthUserTask;
-import com.pobopovola.gymanager_app.model.Client;
+import com.pobopovola.gymanager_app.model.ClientInfo;
 import com.pobopovola.gymanager_app.model.UserInfo;
 import com.pobopovola.gymanager_app.tasks.LoadClientsTask;
 import com.pobopovola.gymanager_app.tasks.LoadUserInfoTask;
@@ -32,7 +32,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private final List<Client> clientList = new ArrayList<>();
+    private final List<ClientInfo> clientInfoList = new ArrayList<>();
     private final RestTemplate restTemplate = new RestTemplate();
     private Context context;
 
@@ -52,14 +52,14 @@ public class MainActivity extends AppCompatActivity {
         userInfoTextView = findViewById(R.id.current_user_info);
         ListView clientsListView = findViewById(R.id.clients_list);
 
-        clientArrayAdapter = new ClientAdapter(this, R.layout.client_item_layout, clientList);
+        clientArrayAdapter = new ClientAdapter(this, R.layout.client_item_layout, clientInfoList);
         clientsListView.setAdapter(clientArrayAdapter);
 
         clientsListView.setOnItemClickListener((parent, view, position, id) -> {
-            Client client = (Client) parent.getItemAtPosition(position);
-            if (client != null) {
+            ClientInfo clientInfo = (ClientInfo) parent.getItemAtPosition(position);
+            if (clientInfo != null) {
                 Intent intent = new Intent(MainActivity.this, ClientViewActivity.class);
-                intent.putExtra(CLIENT_ID_EXTRA, client.getId());
+                intent.putExtra(CLIENT_ID_EXTRA, clientInfo.getId());
                 startActivity(intent);
             }
         });
@@ -95,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
             new LoadClientsTask(
                     restTemplate,
                     clients -> {
-                        clientList.clear();
-                        clientList.addAll(clients);
+                        clientInfoList.clear();
+                        clientInfoList.addAll(clients);
                         clientArrayAdapter.notifyDataSetChanged();
                     },
                     code -> {
