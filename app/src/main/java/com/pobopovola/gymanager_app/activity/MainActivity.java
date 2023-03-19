@@ -17,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.pobopovola.gymanager_app.CreditsHolder;
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.ClientAdapter;
-import com.pobopovola.gymanager_app.tasks.AuthTask;
 import com.pobopovola.gymanager_app.model.ClientInfo;
 import com.pobopovola.gymanager_app.model.UserInfo;
 import com.pobopovola.gymanager_app.tasks.LoadClientsTask;
@@ -37,13 +36,13 @@ public class MainActivity extends AppCompatActivity {
     private final List<ClientInfo> clientInfoList = new ArrayList<>();
     private final RestTemplate restTemplate = RestTemplateBuilder.buildDefault();
     private Context context;
+    private boolean authActivityStarted = false;
 
     private TextView userInfoTextView;
 
     private ClientAdapter clientArrayAdapter;
     private UserInfo currentUser;
 
-    private int tokenRefreshCount = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadCreditsAndValidate();
+        authActivityStarted = false;
     }
 
     void loadData() {
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                     },
                     code -> {
                         if (code == HttpStatus.FORBIDDEN) {
-                            generateTokenAndLoadData();
+                            startAuthActivity();
                         }
                     }
             ).execute();
@@ -105,7 +105,9 @@ public class MainActivity extends AppCompatActivity {
                         clientArrayAdapter.notifyDataSetChanged();
                     },
                     code -> {
-                        if (code != HttpStatus.FORBIDDEN) {
+                        if (code == HttpStatus.FORBIDDEN) {
+                            startAuthActivity();
+                        } else {
                             Toast.makeText(context, "Can't load clients :(", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -124,34 +126,22 @@ public class MainActivity extends AppCompatActivity {
         if (CreditsHolder.getCredits() == null) {
             startAuthActivity();
         } else {
-            generateTokenAndLoadData();
+            loadData();
         }
     }
 
-    private void generateTokenAndLoadData() {
-        if (tokenRefreshCount > 10) {
-            startAuthActivity();
-        } else {
-            new AuthTask(
-                    restTemplate,
-                    token -> {
-                        CreditsHolder.setToken(token);
-                        CreditsHolder.saveToPreferences(context);
-                        tokenRefreshCount++;
-                        loadData();
-                    },
-                    code -> {
-                        Toast.makeText(context, "Can't auth :(", Toast.LENGTH_LONG).show();
-                        if (code == HttpStatus.FORBIDDEN) {
-                            startAuthActivity();
-                        }
-                    }
-            ).execute();
+    private synchronized void startAuthActivity() {
+        if (authActivityStarted) {
+            return;
         }
-    }
-
-    private void startAuthActivity() {
+        authActivityStarted = true;
         Intent intent = new Intent(MainActivity.this, AuthViewActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        CreditsHolder.saveToPreferences(context);
     }
 }

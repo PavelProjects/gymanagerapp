@@ -3,10 +3,15 @@ package com.pobopovola.gymanager_app.tasks;
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
 import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.pobopovola.gymanager_app.API;
+import com.pobopovola.gymanager_app.CreditsHolder;
 import com.pobopovola.gymanager_app.exception.ResponseException;
+import com.pobopovola.gymanager_app.model.AuthCredits;
+import com.pobopovola.gymanager_app.model.UserToken;
 import com.pobopovola.gymanager_app.utils.NetUtils;
 import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
 
@@ -25,6 +30,7 @@ public abstract class BaseNetAsyncTask<T> extends AsyncTask<Void, Void, Response
     private final RestTemplate restTemplate;
     private Consumer<T> processSuccess;
     private Consumer<HttpStatus> processFailure;
+    private boolean triedAuth = false;
 
     public BaseNetAsyncTask(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -42,14 +48,7 @@ public abstract class BaseNetAsyncTask<T> extends AsyncTask<Void, Void, Response
 
     @Override
     protected ResponseEntity<T> doInBackground(Void... voids) {
-        try {
-            return makeRequest();
-        } catch (ResponseException exception) {
-            return new ResponseEntity<>(exception.getStatus());
-        } catch (RuntimeException exception) {
-            Log.e(LOGGER_TAG, "Failed to process request ", exception);
-            return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
-        }
+        return makeRequestSafe();
     }
 
     @Override
@@ -64,6 +63,44 @@ public abstract class BaseNetAsyncTask<T> extends AsyncTask<Void, Void, Response
         if (processSuccess != null) {
             processSuccess.accept(result.getBody());
         }
+    }
+
+    private ResponseEntity<T> makeRequestSafe() {
+        try {
+            return makeRequest();
+        } catch (ResponseException exception) {
+            if (exception.getStatus() == HttpStatus.FORBIDDEN && !triedAuth && tryAuth()) {
+                makeRequestSafe();
+            }
+            return new ResponseEntity<>(exception.getStatus());
+        } catch (RuntimeException exception) {
+            Log.e(LOGGER_TAG, "Failed to process request ", exception);
+            return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
+        }
+    }
+
+    private boolean tryAuth() {
+        triedAuth = true;
+
+        Log.w(LOGGER_TAG, "Token expired, trying to generate new");
+        AuthCredits authCredits = CreditsHolder.getCredits();
+        if (authCredits == null) {
+            Log.e(LOGGER_TAG, "Credits are empty!");
+            return false;
+        }
+
+        ResponseEntity<UserToken> tokenResponse = getRestTemplate().postForEntity(
+                API.LOGIN_URL,
+                authCredits,
+                UserToken.class
+        );
+        if (NetUtils.isFailed(tokenResponse)) {
+            Log.w(LOGGER_TAG, "Token update failed");
+            return false;
+        }
+        CreditsHolder.setToken(tokenResponse.getBody());
+        Log.w(LOGGER_TAG, "Token updated");
+        return true;
     }
 
     protected RestTemplate getRestTemplate() {

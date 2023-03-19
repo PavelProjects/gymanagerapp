@@ -2,6 +2,7 @@ package com.pobopovola.gymanager_app.activity;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -9,15 +10,20 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.pobopovola.gymanager_app.API;
 import com.pobopovola.gymanager_app.CreditsHolder;
 import com.pobopovola.gymanager_app.R;
-import com.pobopovola.gymanager_app.tasks.AuthTask;
+import com.pobopovola.gymanager_app.model.UserToken;
 import com.pobopovola.gymanager_app.model.AuthCredits;
+import com.pobopovola.gymanager_app.tasks.BaseNetAsyncTask;
 import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.function.Consumer;
 
 public class AuthViewActivity extends AppCompatActivity {
     private final String LOGGER_TAG = AuthViewActivity.class.getSimpleName();
@@ -53,13 +59,11 @@ public class AuthViewActivity extends AppCompatActivity {
                 return;
             }
             CreditsHolder.setCredits(new AuthCredits(login, password));
-            CreditsHolder.saveToPreferences(context);
 
             new AuthTask(
                     restTemplate,
                     r -> {
                         CreditsHolder.setToken(r);
-                        CreditsHolder.saveToPreferences(context);
                         Toast.makeText(context, "Welcome!", Toast.LENGTH_SHORT).show();
                         finish();
                     },
@@ -68,5 +72,37 @@ public class AuthViewActivity extends AppCompatActivity {
                     }
             ).execute();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        CreditsHolder.saveToPreferences(context);
+    }
+
+    class AuthTask extends BaseNetAsyncTask<UserToken> {
+        private final String LOGGER_TAG = AuthTask.class.getSimpleName();
+
+        public AuthTask(
+                RestTemplate restTemplate,
+                Consumer<UserToken> processSuccess,
+                Consumer<HttpStatus> processFailure) {
+            super(restTemplate, processSuccess, processFailure);
+        }
+
+        @Override
+        protected ResponseEntity<UserToken> makeRequest() {
+            AuthCredits authCredits = CreditsHolder.getCredits();
+            if (authCredits == null) {
+                Log.e(LOGGER_TAG, "Credits are empty!");
+                return null;
+            }
+
+            return getRestTemplate().postForEntity(
+                    API.LOGIN_URL,
+                    authCredits,
+                    UserToken.class
+            );
+        }
     }
 }
