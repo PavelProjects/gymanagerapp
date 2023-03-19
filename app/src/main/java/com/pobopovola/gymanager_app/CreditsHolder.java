@@ -3,6 +3,7 @@ package com.pobopovola.gymanager_app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.pobopovola.gymanager_app.model.AuthCredits;
 import com.pobopovola.gymanager_app.model.UserInfo;
@@ -14,15 +15,18 @@ import org.jetbrains.annotations.Nullable;
 public class CreditsHolder {
     private static UserToken token;
     private static AuthCredits credits;
-    private static UserInfo currentUser;
 
     public static void loadFromPreferences(Context context) {
+        if (token != null && credits != null) {
+            return;
+        }
+
         SharedPreferences sharedPreferences =
                 context.getSharedPreferences(context.getString(R.string.credits_preferences), Context.MODE_PRIVATE);
 
         String tokenValue = sharedPreferences.getString(context.getString(R.string.token_preferences), null);
-        String login = sharedPreferences.getString(context.getString(R.string.login), null);
-        String password = sharedPreferences.getString(context.getString(R.string.password), null);
+        String login = sharedPreferences.getString(context.getString(R.string.login_preferences), null);
+        String password = sharedPreferences.getString(context.getString(R.string.password_preferences), null);
 
         if (StringUtils.isNotBlank(tokenValue)) {
             token = new UserToken(tokenValue);
@@ -59,7 +63,7 @@ public class CreditsHolder {
         return credits;
     }
 
-    public static synchronized void setCredits(AuthCredits credits) {
-        CreditsHolder.credits = credits;
+    public static synchronized void setCredits(AuthCredits newCredits) {
+        credits = newCredits;
     }
 }

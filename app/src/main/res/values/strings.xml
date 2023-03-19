@@ -1,12 +1,18 @@
 <resources>
     <string name="app_name">gymanager-app</string>
-    <string name="login">login</string>
-    <string name="password">password</string>
-    <string name="auth">auth</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="auth">Войти</string>
 
     <string name="credits_preferences">credits_preferences</string>
     <string name="login_preferences">login</string>
     <string name="password_preferences">password</string>
     <string name="token_preferences">token</string>
-    <string name="workouts">Workouts</string>
+
+    <string name="workouts">Занятия</string>
+    <string name="start_date">Дата:</string>
+    <string name="description">Описание:</string>
+    <string name="exercises">Упражнения</string>
+    <string name="results_count">Подходов:</string>
+    <string name="best_result">Лучший результат:</string>
 </resources>

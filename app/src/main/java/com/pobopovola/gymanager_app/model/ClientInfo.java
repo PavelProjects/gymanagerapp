@@ -13,7 +13,7 @@ public class ClientInfo {
     private String avatarURL;
     private Date birthDate;
     private String description;
-    private List<WorkoutInfo> workoutInfoList = new ArrayList<>();
+    private List<WorkoutInfo> workouts = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -63,16 +63,16 @@ public class ClientInfo {
         this.avatarURL = avatarURL;
     }
 
-    public List<WorkoutInfo> getWorkoutInfoList() {
-        return workoutInfoList;
+    public List<WorkoutInfo> getWorkouts() {
+        return workouts;
     }
 
-    public void setWorkoutInfoList(List<WorkoutInfo> workoutInfoList) {
-        this.workoutInfoList = workoutInfoList;
+    public void setWorkouts(List<WorkoutInfo> workouts) {
+        this.workouts = workouts;
     }
 
     public void addWorkoutInfo(WorkoutInfo workoutInfo) {
-        this.workoutInfoList.add(workoutInfo);
+        this.workouts.add(workoutInfo);
     }
 
     public Date getBirthDate() {

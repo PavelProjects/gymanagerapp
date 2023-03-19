@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ExerciseInfo {
     private String id;
-    private String type;
+    private ExerciseTypeInfo exerciseType;
     private String note;
     private List<ExerciseResultInfo> results = new ArrayList<>();
 
@@ -17,12 +17,12 @@ public class ExerciseInfo {
         this.id = id;
     }
 
-    public String getType() {
-        return type;
+    public ExerciseTypeInfo getExerciseType() {
+        return exerciseType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setExerciseType(ExerciseTypeInfo exerciseType) {
+        this.exerciseType = exerciseType;
     }
 
     public String getNote() {

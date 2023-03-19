@@ -31,7 +31,7 @@ public class LoadUserInfoTask extends BaseNetAsyncTask<UserInfo> {
     }
 
     @Override
-    protected ResponseEntity<UserInfo> doInBackground(Void... voids) {
+    protected ResponseEntity<UserInfo> makeRequest() {
         if (StringUtils.isBlank(login)) {
             if (CreditsHolder.getCredits() == null) {
                 Log.e(LOGGER_TAG, "login parameter is missing!");

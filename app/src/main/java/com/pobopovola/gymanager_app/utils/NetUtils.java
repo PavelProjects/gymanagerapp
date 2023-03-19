@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 public class NetUtils {
     public static boolean isFailed(ResponseEntity responseEntity) {
-        return responseEntity == null || responseEntity.getStatusCode().value() != 200 || responseEntity.getBody() == null;
+        return responseEntity == null || responseEntity.getStatusCode().value() != 200 || !responseEntity.hasBody();
     }
 
     public static HttpHeaders buildAuthHeader() {

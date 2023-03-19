@@ -11,8 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.pobopovola.gymanager_app.CreditsHolder;
 import com.pobopovola.gymanager_app.R;
-import com.pobopovola.gymanager_app.tasks.AuthUserTask;
+import com.pobopovola.gymanager_app.tasks.AuthTask;
 import com.pobopovola.gymanager_app.model.AuthCredits;
+import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
@@ -20,7 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 public class AuthViewActivity extends AppCompatActivity {
     private final String LOGGER_TAG = AuthViewActivity.class.getSimpleName();
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = RestTemplateBuilder.buildDefault();
     private Context context;
 
     private EditText loginField;
@@ -43,8 +44,6 @@ public class AuthViewActivity extends AppCompatActivity {
             passwordField.setText(credits.getPassword());
         }
 
-        restTemplate.getMessageConverters().add(new GsonHttpMessageConverter());
-
         button.setOnClickListener(view -> {
             String login = loginField.getText().toString().trim();
             String password = passwordField.getText().toString().trim();
@@ -54,8 +53,9 @@ public class AuthViewActivity extends AppCompatActivity {
                 return;
             }
             CreditsHolder.setCredits(new AuthCredits(login, password));
+            CreditsHolder.saveToPreferences(context);
 
-            new AuthUserTask(
+            new AuthTask(
                     restTemplate,
                     r -> {
                         CreditsHolder.setToken(r);

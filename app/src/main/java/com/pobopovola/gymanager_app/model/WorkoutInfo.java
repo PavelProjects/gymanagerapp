@@ -1,12 +1,13 @@
 package com.pobopovola.gymanager_app.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class WorkoutInfo {
     private String id;
-    private Date startDate;
+    private LocalDateTime startDate;
     private UserInfo trainer;
     private String description;
     private List<ExerciseInfo> exercises = new ArrayList<>();
@@ -19,11 +20,11 @@ public class WorkoutInfo {
         this.id = id;
     }
 
-    public Date getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 

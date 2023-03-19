@@ -5,6 +5,7 @@ import static com.pobopovola.gymanager_app.activity.ClientViewActivity.CLIENT_ID
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,11 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.pobopovola.gymanager_app.CreditsHolder;
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.ClientAdapter;
-import com.pobopovola.gymanager_app.tasks.AuthUserTask;
+import com.pobopovola.gymanager_app.tasks.AuthTask;
 import com.pobopovola.gymanager_app.model.ClientInfo;
 import com.pobopovola.gymanager_app.model.UserInfo;
 import com.pobopovola.gymanager_app.tasks.LoadClientsTask;
 import com.pobopovola.gymanager_app.tasks.LoadUserInfoTask;
+import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
 
 
 import org.springframework.http.HttpStatus;
@@ -33,7 +35,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private final List<ClientInfo> clientInfoList = new ArrayList<>();
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = RestTemplateBuilder.buildDefault();
     private Context context;
 
     private TextView userInfoTextView;
@@ -41,13 +43,14 @@ public class MainActivity extends AppCompatActivity {
     private ClientAdapter clientArrayAdapter;
     private UserInfo currentUser;
 
+    private int tokenRefreshCount = 0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
         context = getApplicationContext();
-        restTemplate.getMessageConverters().add(new GsonHttpMessageConverter());
 
         userInfoTextView = findViewById(R.id.current_user_info);
         ListView clientsListView = findViewById(R.id.clients_list);
@@ -71,14 +74,12 @@ public class MainActivity extends AppCompatActivity {
             CreditsHolder.saveToPreferences(context);
             startAuthActivity();
         });
-
-        loadCreditsAndValidate();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadData();
+        loadCreditsAndValidate();
     }
 
     void loadData() {
@@ -89,7 +90,11 @@ public class MainActivity extends AppCompatActivity {
                         currentUser = userInfo;
                         userInfoTextView.setText(currentUser.getFirstName());
                     },
-                    null
+                    code -> {
+                        if (code == HttpStatus.FORBIDDEN) {
+                            generateTokenAndLoadData();
+                        }
+                    }
             ).execute();
 
             new LoadClientsTask(
@@ -100,39 +105,49 @@ public class MainActivity extends AppCompatActivity {
                         clientArrayAdapter.notifyDataSetChanged();
                     },
                     code -> {
-                        Toast.makeText(context, "Can't load clients :(", Toast.LENGTH_SHORT).show();
+                        if (code != HttpStatus.FORBIDDEN) {
+                            Toast.makeText(context, "Can't load clients :(", Toast.LENGTH_SHORT).show();
+                        }
                     }
             ).execute();
-        }
+    }
     }
 
     private void loadCreditsAndValidate() {
         CreditsHolder.loadFromPreferences(context);
 
+        if (CreditsHolder.getToken() != null) {
+            loadData();
+            return;
+        }
+
         if (CreditsHolder.getCredits() == null) {
             startAuthActivity();
-        } else if (CreditsHolder.getToken() == null) {
-            generateToken();
         } else {
-            loadData();
+            generateTokenAndLoadData();
         }
     }
 
-    private void generateToken() {
-        new AuthUserTask(
-                restTemplate,
-                token -> {
-                    CreditsHolder.setToken(token);
-                    CreditsHolder.saveToPreferences(context);
-                },
-                code -> {
-                    if (code == HttpStatus.FORBIDDEN) {
-                        startAuthActivity();
-                    } else {
+    private void generateTokenAndLoadData() {
+        if (tokenRefreshCount > 10) {
+            startAuthActivity();
+        } else {
+            new AuthTask(
+                    restTemplate,
+                    token -> {
+                        CreditsHolder.setToken(token);
+                        CreditsHolder.saveToPreferences(context);
+                        tokenRefreshCount++;
+                        loadData();
+                    },
+                    code -> {
                         Toast.makeText(context, "Can't auth :(", Toast.LENGTH_LONG).show();
+                        if (code == HttpStatus.FORBIDDEN) {
+                            startAuthActivity();
+                        }
                     }
-                }
-        ).execute();
+            ).execute();
+        }
     }
 
     private void startAuthActivity() {
