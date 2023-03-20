@@ -1,5 +1,7 @@
 package com.pobopovola.gymanager_app.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -89,5 +91,9 @@ public class ClientInfo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean validate() {
+        return StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(phone);
     }
 }

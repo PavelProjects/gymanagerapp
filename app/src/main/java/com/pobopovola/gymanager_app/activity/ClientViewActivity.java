@@ -4,39 +4,30 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.WorkoutAdapter;
 import com.pobopovola.gymanager_app.model.ClientInfo;
 import com.pobopovola.gymanager_app.model.WorkoutInfo;
+import com.pobopovola.gymanager_app.tasks.CreateUpdateClientTask;
 import com.pobopovola.gymanager_app.tasks.LoadClientInfoTask;
-import com.pobopovola.gymanager_app.utils.DateUtils;
 import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
-import com.pobopovola.gymanager_app.utils.ViewUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 public class ClientViewActivity extends AppCompatActivity {
@@ -48,7 +39,15 @@ public class ClientViewActivity extends AppCompatActivity {
 
     private Context context;
     private String clientId;
+    private boolean editable = false;
     private ClientInfo clientInfo;
+
+    private EditText clientNameEditText;
+    private EditText clientPhoneEditText;
+    private EditText clientDescriptionEditText;
+    private EditText clientBirthDateEditText;
+    private Button editButton;
+    private Button saveButton;
 
     private WorkoutAdapter workoutAdapter;
 
@@ -57,11 +56,8 @@ public class ClientViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.client_view);
         context = getBaseContext();
-
         clientId = getIntent().getStringExtra(CLIENT_ID_EXTRA);
-        if (StringUtils.isEmpty(clientId)) {
-            finish();
-        }
+        editable = StringUtils.isBlank(clientId);
 
         ListView workoutListView = findViewById(R.id.client_workouts);
         workoutAdapter = new WorkoutAdapter(this, R.layout.workout_item_layout, new ArrayList<>());
@@ -75,37 +71,103 @@ public class ClientViewActivity extends AppCompatActivity {
             }
         });
 
+        clientNameEditText = findViewById(R.id.client_name);
+        clientPhoneEditText = findViewById(R.id.client_phone);
+        clientDescriptionEditText = findViewById(R.id.client_description);
+        clientBirthDateEditText = findViewById(R.id.client_birth_date);
+        editButton = findViewById(R.id.edit_button);
+        saveButton = findViewById(R.id.save_button);
+
+        initButtons();
         loadData();
     }
 
-    private void loadData() {
-        new LoadClientInfoTask(
-                restTemplate,
-                clientId,
-                client -> {
-                    clientInfo = client;
-                    updateFields();
-                },
-                code -> {
-                    if (code == HttpStatus.FORBIDDEN) {
-                        finish();
-                    } else {
-                        Toast.makeText(context, "Failed to load client info", Toast.LENGTH_SHORT).show();
+    private void initButtons() {
+        editButton.setOnClickListener(view -> {
+            editable = true;
+            updateFields();
+        });
+        saveButton.setOnClickListener(view -> {
+            if (clientInfo == null) {
+                clientInfo = new ClientInfo();
+            }
+            clientInfo.setFirstName(clientNameEditText.getText().toString());
+            clientInfo.setPhone(clientPhoneEditText.getText().toString());
+            clientInfo.setDescription(clientDescriptionEditText.getText().toString());
+            //TODO
+            clientInfo.setBirthDate(new Date());
+
+            if (!clientInfo.validate()) {
+                Toast.makeText(context, "Not all necessary fields are filed", Toast.LENGTH_LONG).show();
+            }
+
+            new CreateUpdateClientTask(
+                    restTemplate,
+                    result -> {
+                        Toast.makeText(context, "Client " + (clientInfo.getId() == null ? "created" : "updated"), Toast.LENGTH_SHORT).show();
+                        clientInfo = result;
+                        editable = false;
+                        updateFields();
+                    },
+                    code -> {
+                        Log.e(LOGGER_TAG, "Client creation failed with code " + code.value());
+                        Toast.makeText(context, "Failed to create client", Toast.LENGTH_SHORT).show();
                     }
+            ).setClientInfo(clientInfo).execute();
+        });
+
+    }
+
+    private void loadData() {
+        if (StringUtils.isEmpty(clientId)) {
+            updateFields();
+            return;
+        }
+        new LoadClientInfoTask(
+            restTemplate,
+            clientId,
+            client -> {
+                clientInfo = client;
+                updateFields();
+            },
+            code -> {
+                if (code == HttpStatus.FORBIDDEN) {
+                    finish();
+                } else {
+                    Toast.makeText(context, "Failed to load client info", Toast.LENGTH_SHORT).show();
                 }
+            }
         ).execute();
     }
 
     private void updateFields() {
-        ViewUtils.setTextIfViewExists(findViewById(R.id.client_name), clientInfo.getFirstName());
-        ViewUtils.setTextIfViewExists(findViewById(R.id.client_phone), clientInfo.getPhone());
-        ViewUtils.setTextIfViewExists(findViewById(R.id.client_description), clientInfo.getDescription());
-        if (clientInfo.getBirthDate() != null) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("RU"));
-            ViewUtils.setTextIfViewExists(findViewById(R.id.client_birth_date), dateFormat.format(clientInfo.getBirthDate()));
+        clientNameEditText.setEnabled(editable);
+        clientPhoneEditText.setEnabled(editable);
+        clientDescriptionEditText.setEnabled(editable);
+        clientBirthDateEditText.setEnabled(editable);
+
+        if (editable) {
+            editButton.setVisibility(View.GONE);
+            saveButton.setVisibility(View.VISIBLE);
+        } else {
+            editButton.setVisibility(View.VISIBLE);
+            saveButton.setVisibility(View.GONE);
         }
 
-        workoutAdapter.clear();
-        workoutAdapter.addAll(clientInfo.getWorkouts());
+        if (clientInfo != null) {
+            if (clientInfo.getBirthDate() != null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("RU"));
+                clientBirthDateEditText.setText(dateFormat.format(clientInfo.getBirthDate()));
+            }
+
+            clientNameEditText.setText(clientInfo.getFirstName());
+            clientPhoneEditText.setText(clientInfo.getPhone());
+            clientDescriptionEditText.setText(clientInfo.getDescription());
+
+            workoutAdapter.clear();
+            if (clientInfo.getWorkouts() != null) {
+                workoutAdapter.addAll(clientInfo.getWorkouts());
+            }
+        }
     }
 }

@@ -14,4 +14,10 @@
         <!-- Customize your theme here. -->
         <item name="android:textSize">10pt</item>
     </style>
+    <style name="Theme.Gymanagerapp.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+    <style name="Theme.Gymanagerapp.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Gymanagerapp.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

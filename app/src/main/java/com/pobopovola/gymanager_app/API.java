@@ -9,6 +9,8 @@ public interface API {
 
     String CLIENT_ALL_URL = BASE_URL + "/client/all";
     String CLIENT_BY_ID_URL = BASE_URL + "/client/{id}";
+    String CLIENT_CREATE_URL = BASE_URL + "/client";
+    String CLIENT_UPDATE_URL = BASE_URL + "/client/update";
 
     String WORKOUT_BY_ID = BASE_URL + "/workout/{id}";
 }

@@ -25,7 +25,6 @@ import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -66,13 +65,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button logoutButton = findViewById(R.id.button_logout);
-        logoutButton.setOnClickListener(view -> {
-            CreditsHolder.setCredits(null);
-            CreditsHolder.setToken(null);
-            CreditsHolder.saveToPreferences(context);
-            startAuthActivity();
-        });
+        initButtons();
     }
 
     @Override
@@ -82,7 +75,21 @@ public class MainActivity extends AppCompatActivity {
         authActivityStarted = false;
     }
 
-    void loadData() {
+    private void initButtons() {
+        findViewById(R.id.button_logout).setOnClickListener(view -> {
+            CreditsHolder.setCredits(null);
+            CreditsHolder.setToken(null);
+            CreditsHolder.saveToPreferences(context);
+            startAuthActivity();
+        });
+
+        findViewById(R.id.add_client).setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, ClientViewActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void loadData() {
         if (CreditsHolder.getToken() != null){
             new LoadUserInfoTask(
                     restTemplate,

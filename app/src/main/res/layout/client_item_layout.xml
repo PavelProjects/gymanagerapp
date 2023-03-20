@@ -16,13 +16,12 @@
         android:paddingLeft="5pt"
         android:orientation="vertical">
         <TextView
-            android:id="@+id/client_list_id"
+            android:id="@+id/client_list_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="10pt"/>
-
         <TextView
-            android:id="@+id/client_list_name"
+            android:id="@+id/client_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="10pt"/>

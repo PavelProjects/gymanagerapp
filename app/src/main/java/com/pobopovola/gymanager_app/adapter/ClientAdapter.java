@@ -42,11 +42,11 @@ public class ClientAdapter extends ArrayAdapter<ClientInfo> {
             view = convertView;
         }
 
-        TextView idView = view.findViewById(R.id.client_list_id);
+        TextView phoneView = view.findViewById(R.id.client_phone);
         TextView nameView = view.findViewById(R.id.client_list_name);
 
-        if (idView != null) {
-            idView.setText(clientInfo.getId());
+        if (phoneView != null) {
+            phoneView.setText(clientInfo.getPhone());
         }
 
         if (nameView != null) {
