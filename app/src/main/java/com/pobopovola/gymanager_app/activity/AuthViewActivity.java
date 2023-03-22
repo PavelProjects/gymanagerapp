@@ -37,6 +37,7 @@ public class AuthViewActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.auth_view);
+        setTitle("Авторизация");
 
         context = getApplicationContext();
 

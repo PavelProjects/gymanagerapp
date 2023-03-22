@@ -47,10 +47,11 @@ public class ExerciseAdapter extends ArrayAdapter<ExerciseInfo> {
         if (exerciseInfo.getResults().size() > 0) {
             List<ExerciseResultInfo> resultsSorted =  exerciseInfo.getResults()
                     .stream()
-                    .sorted(Comparator.comparingInt(ExerciseResultInfo::getResult))
+                    .sorted(Comparator.comparingInt(ExerciseResultInfo::getWeight))
+                    .sorted(Comparator.comparingInt(ExerciseResultInfo::getRepeats))
                     .collect(Collectors.toList());
 
-            ViewUtils.setIntIfViewExists(view.findViewById(R.id.exercise_best_result), resultsSorted.get(resultsSorted.size() - 1).getResult());
+            ViewUtils.setIntIfViewExists(view.findViewById(R.id.exercise_best_result), resultsSorted.get(resultsSorted.size() - 1).getWeight());
         }
         ViewUtils.setTextIfViewExists(view.findViewById(R.id.exercise_note), exerciseInfo.getNote());
 

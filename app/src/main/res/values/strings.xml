@@ -31,4 +31,9 @@
     <string name="birth_date">День рождения:</string>
     <string name="phone">Телефон:</string>
     <string name="name">Имя:</string>
+    <string name="exercise_type">Упражнение:</string>
+    <string name="exercise_results">Подходы</string>
+    <string name="weight">Вес:</string>
+    <string name="repeats">Повторений:</string>
+    <string name="logout">Выход</string>
 </resources>

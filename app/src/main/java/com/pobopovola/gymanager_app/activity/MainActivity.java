@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private boolean authActivityStarted = false;
 
-    private TextView userInfoTextView;
-
     private ClientAdapter clientArrayAdapter;
     private UserInfo currentUser;
 
@@ -48,9 +47,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
+        setSupportActionBar(findViewById(R.id.toolbar));
+
         context = getApplicationContext();
 
-        userInfoTextView = findViewById(R.id.current_user_info);
         ListView clientsListView = findViewById(R.id.clients_list);
 
         clientArrayAdapter = new ClientAdapter(this, R.layout.client_item_layout, clientInfoList);
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                     restTemplate,
                     userInfo -> {
                         currentUser = userInfo;
-                        userInfoTextView.setText(currentUser.getFirstName());
+                        getSupportActionBar().setTitle(currentUser.getFirstName());
                     },
                     code -> {
                         if (code == HttpStatus.FORBIDDEN) {

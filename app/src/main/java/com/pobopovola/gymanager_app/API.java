@@ -13,4 +13,6 @@ public interface API {
     String CLIENT_UPDATE_URL = BASE_URL + "/client/update";
 
     String WORKOUT_BY_ID = BASE_URL + "/workout/{id}";
+
+    String EXERCISE_TYPES_URL = BASE_URL + "/dict/exercise";
 }

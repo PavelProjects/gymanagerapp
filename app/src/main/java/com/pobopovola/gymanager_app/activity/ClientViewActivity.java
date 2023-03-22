@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.WorkoutAdapter;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class ClientViewActivity extends AppCompatActivity {
+public class ClientViewActivity extends BaseEditableActivity {
     private final static String LOGGER_TAG = ClientViewActivity.class.getSimpleName();
 
     public static final String CLIENT_ID_EXTRA = "clientId";
@@ -39,26 +40,32 @@ public class ClientViewActivity extends AppCompatActivity {
 
     private Context context;
     private String clientId;
-    private boolean editable = false;
     private ClientInfo clientInfo;
 
     private EditText clientNameEditText;
     private EditText clientPhoneEditText;
     private EditText clientDescriptionEditText;
     private EditText clientBirthDateEditText;
-    private Button editButton;
-    private Button saveButton;
 
     private WorkoutAdapter workoutAdapter;
 
+    public ClientViewActivity() {
+        super(R.layout.client_view);
+    }
+
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.client_view);
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
         context = getBaseContext();
         clientId = getIntent().getStringExtra(CLIENT_ID_EXTRA);
-        editable = StringUtils.isBlank(clientId);
+        setEditable(StringUtils.isBlank(clientId));
 
+        loadData();
+    }
+
+    @Override
+    protected void initFields() {
         ListView workoutListView = findViewById(R.id.client_workouts);
         workoutAdapter = new WorkoutAdapter(this, R.layout.workout_item_layout, new ArrayList<>());
         workoutListView.setAdapter(workoutAdapter);
@@ -75,52 +82,44 @@ public class ClientViewActivity extends AppCompatActivity {
         clientPhoneEditText = findViewById(R.id.client_phone);
         clientDescriptionEditText = findViewById(R.id.client_description);
         clientBirthDateEditText = findViewById(R.id.client_birth_date);
-        editButton = findViewById(R.id.edit_button);
-        saveButton = findViewById(R.id.save_button);
 
-        initButtons();
-        loadData();
+        findViewById(R.id.add_workout).setOnClickListener(view -> {
+            startActivity(new Intent(this, WorkoutViewActivity.class));
+        });
     }
 
-    private void initButtons() {
-        editButton.setOnClickListener(view -> {
-            editable = true;
-            updateFields();
-        });
-        saveButton.setOnClickListener(view -> {
-            if (clientInfo == null) {
-                clientInfo = new ClientInfo();
-            }
-            clientInfo.setFirstName(clientNameEditText.getText().toString());
-            clientInfo.setPhone(clientPhoneEditText.getText().toString());
-            clientInfo.setDescription(clientDescriptionEditText.getText().toString());
-            //TODO
-            clientInfo.setBirthDate(new Date());
+    @Override
+    protected void saveObject() {
+        if (clientInfo == null) {
+            clientInfo = new ClientInfo();
+        }
+        clientInfo.setFirstName(clientNameEditText.getText().toString());
+        clientInfo.setPhone(clientPhoneEditText.getText().toString());
+        clientInfo.setDescription(clientDescriptionEditText.getText().toString());
+        //TODO
+        clientInfo.setBirthDate(new Date());
 
-            if (!clientInfo.validate()) {
-                Toast.makeText(context, "Not all necessary fields are filed", Toast.LENGTH_LONG).show();
-            }
+        if (!clientInfo.validate()) {
+            Toast.makeText(context, "Not all necessary fields are filed", Toast.LENGTH_LONG).show();
+        }
 
-            new CreateUpdateClientTask(
-                    restTemplate,
-                    result -> {
-                        Toast.makeText(context, "Client " + (clientInfo.getId() == null ? "created" : "updated"), Toast.LENGTH_SHORT).show();
-                        clientInfo = result;
-                        editable = false;
-                        updateFields();
-                    },
-                    code -> {
-                        Log.e(LOGGER_TAG, "Client creation failed with code " + code.value());
-                        Toast.makeText(context, "Failed to create client", Toast.LENGTH_SHORT).show();
-                    }
-            ).setClientInfo(clientInfo).execute();
-        });
-
+        new CreateUpdateClientTask(
+                restTemplate,
+                result -> {
+                    Toast.makeText(context, "Client " + (clientInfo.getId() == null ? "created" : "updated"), Toast.LENGTH_SHORT).show();
+                    clientInfo = result;
+                    setEditable(false);
+                },
+                code -> {
+                    Log.e(LOGGER_TAG, "Client creation failed with code " + code.value());
+                    Toast.makeText(context, "Failed to create client", Toast.LENGTH_SHORT).show();
+                }
+        ).setClientInfo(clientInfo).execute();
     }
 
     private void loadData() {
         if (StringUtils.isEmpty(clientId)) {
-            updateFields();
+            updateView();
             return;
         }
         new LoadClientInfoTask(
@@ -128,7 +127,8 @@ public class ClientViewActivity extends AppCompatActivity {
             clientId,
             client -> {
                 clientInfo = client;
-                updateFields();
+                getSupportActionBar().setTitle(clientInfo.getFirstName());
+                updateView();
             },
             code -> {
                 if (code == HttpStatus.FORBIDDEN) {
@@ -140,19 +140,11 @@ public class ClientViewActivity extends AppCompatActivity {
         ).execute();
     }
 
-    private void updateFields() {
-        clientNameEditText.setEnabled(editable);
-        clientPhoneEditText.setEnabled(editable);
-        clientDescriptionEditText.setEnabled(editable);
-        clientBirthDateEditText.setEnabled(editable);
-
-        if (editable) {
-            editButton.setVisibility(View.GONE);
-            saveButton.setVisibility(View.VISIBLE);
-        } else {
-            editButton.setVisibility(View.VISIBLE);
-            saveButton.setVisibility(View.GONE);
-        }
+    protected void updateFields() {
+        clientNameEditText.setEnabled(isEditable());
+        clientPhoneEditText.setEnabled(isEditable());
+        clientDescriptionEditText.setEnabled(isEditable());
+        clientBirthDateEditText.setEnabled(isEditable());
 
         if (clientInfo != null) {
             if (clientInfo.getBirthDate() != null) {

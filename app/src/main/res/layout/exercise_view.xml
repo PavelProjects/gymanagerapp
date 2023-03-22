@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    tools:context=".activity.WorkoutViewActivity">
+    tools:context=".activity.ExerciseViewActivity">
 
     <include
         android:id="@+id/edit_toolbar"
@@ -17,12 +17,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/start_date"/>
-        <EditText
-            android:id="@+id/workout_start_date"
+            android:text="@string/exercise_type"/>
+        <Spinner
+            android:id="@+id/exercise_type"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="5pt" />
+            android:layout_height="wrap_content"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -39,22 +38,22 @@
             android:paddingStart="5pt"/>
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/exercise_results"/>
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/exercises"/>
+        android:layout_height="match_parent"
+        android:paddingTop="10pt">
         <ListView
-            android:id="@+id/workout_exercises"
+            android:id="@+id/exercise_results"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingTop="10pt"/>
+            android:layout_height="match_parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/add_exercise"
+            android:id="@+id/add_exercise_result"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"

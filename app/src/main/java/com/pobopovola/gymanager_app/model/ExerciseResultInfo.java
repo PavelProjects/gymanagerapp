@@ -2,7 +2,8 @@ package com.pobopovola.gymanager_app.model;
 
 public class ExerciseResultInfo {
     private String id;
-    private Integer result;
+    private int weight;
+    private int repeats;
     private int executionOrder;
 
     public String getId() {
@@ -13,12 +14,12 @@ public class ExerciseResultInfo {
         this.id = id;
     }
 
-    public Integer getResult() {
-        return result;
+    public int getRepeats() {
+        return repeats;
     }
 
-    public void setResult(Integer result) {
-        this.result = result;
+    public void setRepeats(int repeats) {
+        this.repeats = repeats;
     }
 
     public int getExecutionOrder() {
@@ -27,5 +28,13 @@ public class ExerciseResultInfo {
 
     public void setExecutionOrder(int executionOrder) {
         this.executionOrder = executionOrder;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
     }
 }

@@ -1,16 +1,22 @@
 package com.pobopovola.gymanager_app.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.Gson;
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.ExerciseAdapter;
+import com.pobopovola.gymanager_app.model.ExerciseInfo;
 import com.pobopovola.gymanager_app.model.WorkoutInfo;
 import com.pobopovola.gymanager_app.tasks.LoadWorkoutInfoTask;
 import com.pobopovola.gymanager_app.utils.DateUtils;
@@ -22,7 +28,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
-public class WorkoutViewActivity extends AppCompatActivity {
+public class WorkoutViewActivity extends BaseEditableActivity {
     private static final String LOGGER_TAG = WorkoutViewActivity.class.getSimpleName();
     public static final String WORKOUT_ID_EXTRA = "workoutId";
 
@@ -33,32 +39,69 @@ public class WorkoutViewActivity extends AppCompatActivity {
     private String workoutId;
     private WorkoutInfo workoutInfo;
 
+    private EditText startDateEdit;
+    private EditText descriptionEdit;
+
+    public WorkoutViewActivity() {
+        super(R.layout.workout_view);
+    }
+
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.workout_view);
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        getSupportActionBar().setTitle("Запись тренировки");
+
         context = getBaseContext();
+//        workoutId = getIntent().getStringExtra(WORKOUT_ID_EXTRA);
+        workoutId = "1"; // TODO
+        setEditable(StringUtils.isBlank(workoutId));
 
-        workoutId = getIntent().getStringExtra(WORKOUT_ID_EXTRA);
+        loadData();
+        updateFields();
+    }
 
-        if (StringUtils.isBlank(workoutId)) {
-            Log.e(LOGGER_TAG, "Missing workout id");
-            Toast.makeText(context, "Wops, smth gone wrong :(", Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    protected void initFields() {
+        startDateEdit = findViewById(R.id.workout_start_date);
+        descriptionEdit = findViewById(R.id.workout_description);
 
         ListView exercisesListView = findViewById(R.id.workout_exercises);
         exerciseAdapter = new ExerciseAdapter(this, R.layout.exercise_item_layout, new ArrayList<>());
         exercisesListView.setAdapter(exerciseAdapter);
+        exercisesListView.setOnItemClickListener((parent, view, position, id) -> {
+            ExerciseInfo exerciseInfo = (ExerciseInfo) parent.getItemAtPosition(position);
+            if (exerciseInfo != null) {
+                Gson gson = new Gson();
+                Intent intent = new Intent(WorkoutViewActivity.this, ExerciseViewActivity.class);
+                intent.putExtra(ExerciseViewActivity.EXERCISE_ID_EXTRA, gson.toJson(exerciseInfo));
+                startActivity(intent);
+            }
+        });
 
-        loadData();
+        findViewById(R.id.add_exercise).setOnClickListener(view -> {
+            Gson gson = new Gson();
+            Intent intent = new Intent(WorkoutViewActivity.this, ExerciseViewActivity.class);
+            intent.putExtra(ExerciseViewActivity.EXERCISE_ID_EXTRA, gson.toJson(new ExerciseInfo()));
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void saveObject() {
+        //todo
+        setEditable(false);
     }
 
     private void loadData() {
+        if (StringUtils.isBlank(workoutId)) {
+            return;
+        }
+
         new LoadWorkoutInfoTask(
                 restTemplate,
                 workout -> {
                     workoutInfo = workout;
-                    updateFields();
+                    updateView();
                 },
                 code -> {
                     Toast.makeText(context, "Can't load workout :(", Toast.LENGTH_SHORT).show();
@@ -66,13 +109,19 @@ public class WorkoutViewActivity extends AppCompatActivity {
         ).setWorkoutId(workoutId).execute();
     }
 
-    private void updateFields() {
+    protected void updateFields() {
+        startDateEdit.setEnabled(isEditable());
+        descriptionEdit.setEnabled(isEditable());
+
+
         if (workoutInfo != null) {
-            ViewUtils.setTextIfViewExists(findViewById(R.id.workout_start_date), DateUtils.dateToStringClient(workoutInfo.getStartDate()));
-            ViewUtils.setTextIfViewExists(findViewById(R.id.workout_description), workoutInfo.getDescription());
+            startDateEdit.setText(DateUtils.dateToStringClient(workoutInfo.getStartDate()));
+            descriptionEdit.setText(workoutInfo.getDescription());
 
             exerciseAdapter.clear();
-            exerciseAdapter.addAll(workoutInfo.getExercises());
+            if (workoutInfo.getStartDate() != null) {
+                exerciseAdapter.addAll(workoutInfo.getExercises());
+            }
         }
     }
 }

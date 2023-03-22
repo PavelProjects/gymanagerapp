@@ -15,6 +15,13 @@ public abstract class ListAsyncTask<T> extends BaseNetAsyncTask<List<T>> {
         super(restTemplate, processSuccess, processFailure);
     }
 
+    protected abstract ResponseEntity<T[]> makeArrayRequest();
+
+    @Override
+    protected ResponseEntity<List<T>> makeRequest() {
+        return convertArrayToList(makeArrayRequest());
+    }
+
     protected ResponseEntity<List<T>> convertArrayToList(ResponseEntity<T[]> responseEntity) {
         if (responseEntity.hasBody()) {
             return new ResponseEntity<>(

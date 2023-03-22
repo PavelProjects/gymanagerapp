@@ -19,8 +19,8 @@ import java.util.List;
 public class ClientAdapter extends ArrayAdapter<ClientInfo> {
     private static final String LOG_TAG = ClientAdapter.class.getSimpleName();
 
-    private LayoutInflater layoutInflater;
-    private int layoutResourceId;
+    private final LayoutInflater layoutInflater;
+    private final int layoutResourceId;
 
 
     public ClientAdapter(@NonNull Context context, int resource, @NonNull List<ClientInfo> clientInfoList) {

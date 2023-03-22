@@ -5,24 +5,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:background="?attr/colorPrimary"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:id="@+id/current_user_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="1"/>
-
-        <Button
-            android:id="@+id/button_logout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Logout" />
-
-    </LinearLayout>
+        android:layout_height="?actionBarSize">
+            <Button
+                android:id="@+id/button_logout"
+                android:layout_gravity="end|center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_background"
+                android:text="@string/logout" />
+    </androidx.appcompat.widget.Toolbar>
 
     <FrameLayout
         android:layout_width="match_parent"
