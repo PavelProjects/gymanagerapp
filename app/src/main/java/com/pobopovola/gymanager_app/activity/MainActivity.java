@@ -131,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (CreditsHolder.getCredits() == null) {
+            if (authActivityStarted) {
+                finish();
+            }
             startAuthActivity();
         } else {
             loadData();

@@ -13,7 +13,7 @@ public class ClientInfo {
     private String lastName;
     private String phone;
     private String avatarURL;
-    private Date birthDate;
+    private Date birthday;
     private String description;
     private List<WorkoutInfo> workouts = new ArrayList<>();
 
@@ -77,12 +77,12 @@ public class ClientInfo {
         this.workouts.add(workoutInfo);
     }
 
-    public Date getBirthDate() {
-        return birthDate;
+    public Date getBirthday() {
+        return birthday;
     }
 
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
     }
 
     public String getDescription() {

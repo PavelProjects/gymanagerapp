@@ -43,7 +43,7 @@ public class WorkoutAdapter extends ArrayAdapter<WorkoutInfo> {
         TextView descriptionView = view.findViewById(R.id.workout_description);
 
         if (startDateView != null && workoutInfo.getStartDate() != null) {
-            startDateView.setText(DateUtils.dateToStringClient(workoutInfo.getStartDate()));
+            startDateView.setText(DateUtils.dateTimeToStringClient(workoutInfo.getStartDate()));
         }
 
         if (descriptionView != null) {

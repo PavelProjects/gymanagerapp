@@ -1,18 +1,15 @@
 package com.pobopovola.gymanager_app.activity;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.pobopovola.gymanager_app.R;
 import com.pobopovola.gymanager_app.adapter.WorkoutAdapter;
@@ -20,16 +17,15 @@ import com.pobopovola.gymanager_app.model.ClientInfo;
 import com.pobopovola.gymanager_app.model.WorkoutInfo;
 import com.pobopovola.gymanager_app.tasks.CreateUpdateClientTask;
 import com.pobopovola.gymanager_app.tasks.LoadClientInfoTask;
+import com.pobopovola.gymanager_app.utils.DateUtils;
 import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import java.util.Calendar;
 
 public class ClientViewActivity extends BaseEditableActivity {
     private final static String LOGGER_TAG = ClientViewActivity.class.getSimpleName();
@@ -37,6 +33,7 @@ public class ClientViewActivity extends BaseEditableActivity {
     public static final String CLIENT_ID_EXTRA = "clientId";
 
     private final RestTemplate restTemplate = RestTemplateBuilder.buildDefault();
+    private final Calendar birthdayCalendar = Calendar.getInstance();
 
     private Context context;
     private String clientId;
@@ -46,6 +43,7 @@ public class ClientViewActivity extends BaseEditableActivity {
     private EditText clientPhoneEditText;
     private EditText clientDescriptionEditText;
     private EditText clientBirthDateEditText;
+
 
     private WorkoutAdapter workoutAdapter;
 
@@ -83,6 +81,21 @@ public class ClientViewActivity extends BaseEditableActivity {
         clientDescriptionEditText = findViewById(R.id.client_description);
         clientBirthDateEditText = findViewById(R.id.client_birth_date);
 
+        DatePickerDialog.OnDateSetListener date = (view, year, month, day) -> {
+            birthdayCalendar.set(Calendar.YEAR, year);
+            birthdayCalendar.set(Calendar.MONTH,month);
+            birthdayCalendar.set(Calendar.DAY_OF_MONTH,day);
+            clientBirthDateEditText.setText(DateUtils.dateToStringClient(birthdayCalendar.getTime()));
+        };
+
+        clientBirthDateEditText.setOnClickListener(view -> new DatePickerDialog(
+                ClientViewActivity.this,
+                date,
+                birthdayCalendar.get(Calendar.YEAR),
+                birthdayCalendar.get(Calendar.MONTH),
+                birthdayCalendar.get(Calendar.DAY_OF_MONTH)
+        ).show());
+
         findViewById(R.id.add_workout).setOnClickListener(view -> {
             startActivity(new Intent(this, WorkoutViewActivity.class));
         });
@@ -96,8 +109,7 @@ public class ClientViewActivity extends BaseEditableActivity {
         clientInfo.setFirstName(clientNameEditText.getText().toString());
         clientInfo.setPhone(clientPhoneEditText.getText().toString());
         clientInfo.setDescription(clientDescriptionEditText.getText().toString());
-        //TODO
-        clientInfo.setBirthDate(new Date());
+        clientInfo.setBirthday(birthdayCalendar.getTime());
 
         if (!clientInfo.validate()) {
             Toast.makeText(context, "Not all necessary fields are filed", Toast.LENGTH_LONG).show();
@@ -119,6 +131,7 @@ public class ClientViewActivity extends BaseEditableActivity {
 
     private void loadData() {
         if (StringUtils.isEmpty(clientId)) {
+            getSupportActionBar().setTitle("Добавить клиента");
             updateView();
             return;
         }
@@ -147,9 +160,11 @@ public class ClientViewActivity extends BaseEditableActivity {
         clientBirthDateEditText.setEnabled(isEditable());
 
         if (clientInfo != null) {
-            if (clientInfo.getBirthDate() != null) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("RU"));
-                clientBirthDateEditText.setText(dateFormat.format(clientInfo.getBirthDate()));
+            if (clientInfo.getBirthday() != null) {
+                birthdayCalendar.setTime(clientInfo.getBirthday());
+                clientBirthDateEditText.setText(DateUtils.dateToStringClient(clientInfo.getBirthday()));
+            } else {
+                Log.e(LOGGER_TAG, "Birth day is null");
             }
 
             clientNameEditText.setText(clientInfo.getFirstName());

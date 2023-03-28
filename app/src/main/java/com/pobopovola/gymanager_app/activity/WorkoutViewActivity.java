@@ -3,15 +3,11 @@ package com.pobopovola.gymanager_app.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
 import com.pobopovola.gymanager_app.R;
@@ -21,7 +17,6 @@ import com.pobopovola.gymanager_app.model.WorkoutInfo;
 import com.pobopovola.gymanager_app.tasks.LoadWorkoutInfoTask;
 import com.pobopovola.gymanager_app.utils.DateUtils;
 import com.pobopovola.gymanager_app.utils.RestTemplateBuilder;
-import com.pobopovola.gymanager_app.utils.ViewUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -115,7 +110,7 @@ public class WorkoutViewActivity extends BaseEditableActivity {
 
 
         if (workoutInfo != null) {
-            startDateEdit.setText(DateUtils.dateToStringClient(workoutInfo.getStartDate()));
+            startDateEdit.setText(DateUtils.dateTimeToStringClient(workoutInfo.getStartDate()));
             descriptionEdit.setText(workoutInfo.getDescription());
 
             exerciseAdapter.clear();
